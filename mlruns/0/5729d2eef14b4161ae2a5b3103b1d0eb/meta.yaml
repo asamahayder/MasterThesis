@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/5729d2eef14b4161ae2a5b3103b1d0eb/artifacts
+end_time: 1718101826494
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5729d2eef14b4161ae2a5b3103b1d0eb
+run_name: treasured-yak-495
+run_uuid: 5729d2eef14b4161ae2a5b3103b1d0eb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718101826433
+status: 4
+tags: []
+user_id: asama

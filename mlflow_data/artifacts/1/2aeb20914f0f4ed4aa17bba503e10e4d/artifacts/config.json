@@ -1,0 +1,18 @@
+{
+    "data_load": {
+        "params": {
+            "path_to_data_folder": "../Data/Ex-Vivo/"
+        }
+    },
+    "preprocessing": {
+        "params": {
+            "tukey_window_size": 150,
+            "tukey_alpha": 0.80
+        }
+    },
+    "feature_engineering": {
+        "params": {
+            "n_pcs": 10
+        }
+    }
+}

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/82faebaa946e4df3b670f86fd0eb0b89/artifacts
+end_time: 1718101953713
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 82faebaa946e4df3b670f86fd0eb0b89
+run_name: serious-mouse-383
+run_uuid: 82faebaa946e4df3b670f86fd0eb0b89
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718101953656
+status: 4
+tags: []
+user_id: asama

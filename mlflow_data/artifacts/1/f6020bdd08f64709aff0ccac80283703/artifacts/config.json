@@ -1,0 +1,54 @@
+{
+    "data_load": {
+        "params": {
+            "path_to_data_folder": "../Data/Ex-Vivo/"
+        }
+    },
+    "preprocessing": {
+        "params": {
+            "tukey_window_size": 150,
+            "tukey_alpha": 0.80
+        }
+    },
+    "feature_engineering": {
+        "params": {
+            "n_pcs": 10
+        }
+    },
+    "model_training_and_evaluation": {
+        "params": {
+            "n_estimators": {
+                "min": 100,
+                "max": 1000
+            },
+            "max_depth": {
+                "min": 2,
+                "max": 32
+            },
+            "min_samples_split": {
+                "min": 2,
+                "max": 10
+            },
+            "min_samples_leaf": {
+                "min": 1,
+                "max": 10
+            },
+            "max_features": ["sqrt", "log2"],
+            "bootstrap": [true, false],
+            "criterion": ["gini", "entropy"],
+            "min_weight_fraction_leaf": {
+                "min": 0.0,
+                "max": 0.5
+            },
+            "max_leaf_nodes": {
+                "min": 10,
+                "max": 1000
+            },
+            "min_impurity_decrease": {
+                "min": 0.0,
+                "max": 1.0
+            },
+            "class_weight": [null, "balanced"]
+        }
+    }
+}

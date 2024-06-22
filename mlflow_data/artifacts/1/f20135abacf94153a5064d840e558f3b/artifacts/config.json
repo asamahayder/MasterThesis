@@ -1,0 +1,37 @@
+{
+    "data_load": {
+        "params": {
+            "path_to_data_folder": "../Data/Ex-Vivo/"
+        }
+    },
+    "preprocessing": {
+        "params": {
+            "tukey_window_size": 150,
+            "tukey_alpha": 0.80
+        }
+    },
+    "feature_engineering": {
+        "params": {
+            "n_pcs": 10
+        }
+    },
+    "model_training_and_evaluation": {
+        "params": {
+            "n_neighbors": {
+                "min": 1,
+                "max": 30
+            },
+            "weights": ["uniform", "distance"],
+            "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+            "leaf_size": {
+                "min": 10,
+                "max": 100
+            },
+            "p": {
+                "min": 1,
+                "max": 5
+            },
+            "metric": ["euclidean", "manhattan", "minkowski", "chebyshev"]
+        }
+    }
+}

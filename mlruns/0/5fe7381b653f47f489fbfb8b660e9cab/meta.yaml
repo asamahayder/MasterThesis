@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/5fe7381b653f47f489fbfb8b660e9cab/artifacts
+end_time: 1718102108214
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5fe7381b653f47f489fbfb8b660e9cab
+run_name: rebellious-boar-604
+run_uuid: 5fe7381b653f47f489fbfb8b660e9cab
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718102108141
+status: 4
+tags: []
+user_id: asama

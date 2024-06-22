@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/1aea1e61fa0c4aa8bab6fde994f3ff5a/artifacts
+end_time: 1718101250718
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 1aea1e61fa0c4aa8bab6fde994f3ff5a
+run_name: shivering-skunk-999
+run_uuid: 1aea1e61fa0c4aa8bab6fde994f3ff5a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718101250661
+status: 4
+tags: []
+user_id: asama

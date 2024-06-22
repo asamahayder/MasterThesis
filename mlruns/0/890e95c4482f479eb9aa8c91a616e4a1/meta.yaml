@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/890e95c4482f479eb9aa8c91a616e4a1/artifacts
+end_time: 1718100840873
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 890e95c4482f479eb9aa8c91a616e4a1
+run_name: bold-midge-715
+run_uuid: 890e95c4482f479eb9aa8c91a616e4a1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718100840822
+status: 4
+tags: []
+user_id: asama

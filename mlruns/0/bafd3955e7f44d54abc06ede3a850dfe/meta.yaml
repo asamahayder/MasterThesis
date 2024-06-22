@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/bafd3955e7f44d54abc06ede3a850dfe/artifacts
+end_time: 1718100753291
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bafd3955e7f44d54abc06ede3a850dfe
+run_name: gentle-hare-663
+run_uuid: bafd3955e7f44d54abc06ede3a850dfe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718100753226
+status: 4
+tags: []
+user_id: asama

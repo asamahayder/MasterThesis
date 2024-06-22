@@ -1,0 +1,7 @@
+{
+    "data_load": {
+        "params": {
+            "path_to_data_folder": "../Data/Ex-Vivo/"
+        }
+    }
+}

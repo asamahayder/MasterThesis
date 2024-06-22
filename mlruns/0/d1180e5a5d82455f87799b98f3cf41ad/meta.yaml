@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/asama/Desktop/MasterThesis/mlruns/0/d1180e5a5d82455f87799b98f3cf41ad/artifacts
+end_time: 1718101797646
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d1180e5a5d82455f87799b98f3cf41ad
+run_name: languid-auk-841
+run_uuid: d1180e5a5d82455f87799b98f3cf41ad
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718101797592
+status: 4
+tags: []
+user_id: asama
