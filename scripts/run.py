@@ -34,7 +34,7 @@ def run_step(module_name, function_name, data, params):
     return function(data, params)
 
 # Start MLflow run
-with mlflow.start_run(experiment_id=1, run_name="test"):
+with mlflow.start_run(experiment_id=1):
 
     # Step 1: Load data
     data = run_step('data_load', 'load_data', None, config['data_load']['params'])
@@ -72,7 +72,6 @@ with mlflow.start_run(experiment_id=1, run_name="test"):
 
     mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'config.json'))
     mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'run.py'), artifact_path="scripts")
-    mlflow.set_tag("experiment_name", "my_experiment")
 
     mlflow.log_artifacts(os.path.join(os.path.dirname(__file__), 'temp_plots'), artifact_path="plots")
     mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'log.txt'))
