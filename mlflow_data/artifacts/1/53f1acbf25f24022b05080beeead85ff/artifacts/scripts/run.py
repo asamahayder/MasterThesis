@@ -6,14 +6,13 @@ import atexit
 import shutil
 
 mlflow.set_tracking_uri("http://localhost:5000")
-current_file_directory = os.path.dirname(os.path.abspath(__file__))
-temp_folder_path = os.path.join(current_file_directory, 'temp_plots')
+temp_folder_path = os.path.join(os.path.dirname(__file__), 'temp_plots')
 os.mkdir(temp_folder_path)
 
 # This ensures that the temp folder will be deleted regardless if there is an error or not
-def cleanup(current_file_directory):
-    mlflow.log_artifacts(os.path.join(current_file_directory, 'temp_plots'), artifact_path="plots")
-    mlflow.log_artifact(os.path.join(current_file_directory, 'log.txt'))
+def cleanup():
+    mlflow.log_artifacts(os.path.join(os.path.dirname(__file__), 'temp_plots'), artifact_path="plots")
+    mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'log.txt'))
     
     mlflow.end_run()
 
@@ -22,9 +21,10 @@ def cleanup(current_file_directory):
     if os.path.exists("log.txt"):
         os.remove("log.txt")
 
-atexit.register(cleanup, current_file_directory)
+atexit.register(cleanup)
 
 # Setting the current working directory to the directory of the run script
+current_file_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_file_directory)
 
 # Load configuration
@@ -40,12 +40,12 @@ def run_step(module_name, function_name, data, params):
 # Start MLflow run
 mlflow.start_run(experiment_id=1)
 
-mlflow.log_artifact(os.path.join(current_file_directory, 'config.json'))
-mlflow.log_artifact(os.path.join(current_file_directory, 'run.py'), artifact_path="scripts")
-mlflow.log_artifact(os.path.join(current_file_directory, 'data_load.py'), artifact_path="scripts")
-mlflow.log_artifact(os.path.join(current_file_directory, 'preprocessing.py'), artifact_path="scripts")
-mlflow.log_artifact(os.path.join(current_file_directory, 'feature_engineering.py'), artifact_path="scripts")
-mlflow.log_artifact(os.path.join(current_file_directory, 'model_training_and_evaluation.py'), artifact_path="scripts")
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'config.json'))
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'run.py'), artifact_path="scripts")
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'data_load.py'), artifact_path="scripts")
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'preprocessing.py'), artifact_path="scripts")
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'feature_engineering.py'), artifact_path="scripts")
+mlflow.log_artifact(os.path.join(os.path.dirname(__file__), 'model_training_and_evaluation.py'), artifact_path="scripts")
 
 data_load_params = config['data_load']['params']
 for param, value in data_load_params.items():

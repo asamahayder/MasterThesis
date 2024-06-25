@@ -4,7 +4,6 @@ from scipy.signal.windows import tukey
 import matplotlib.pyplot as plt
 from scipy.signal import correlate
 import logger
-from tqdm import tqdm
 
 def preprocess_data(data, params):
     # Choose the first pulse as the reference pulse (you can change this as needed)
@@ -23,10 +22,10 @@ def preprocess_data(data, params):
         shift = np.argmax(correlation) - len(pulse)
         return shift
 
-
+    # Align the pulses
     aligned_data = []
-    for pulse in tqdm(data, desc='Processing Pulses'):
-        for scan in tqdm(pulse['scan'], desc='Processing Scans', leave=False):
+    for pulse in data:
+        for scan in pulse['scan']:
             signal_forward = scan['forward_scan']['signal']
             signal_backward = scan['backward_scan']['signal']
             shift_forward = find_shift(reference_pulse, signal_forward)
@@ -39,7 +38,7 @@ def preprocess_data(data, params):
             scan['backward_scan']['aligned'] = aligned_pulse_backward
             aligned_data.append(aligned_pulse_forward)
             aligned_data.append(aligned_pulse_backward)
-        for ref in tqdm(pulse['ref'], desc='Processing Refs', leave=False):
+        for ref in pulse['ref']:
             signal_forward = ref['forward_scan']['signal']
             signal_backward = ref['backward_scan']['signal']
             shift_forward = find_shift(reference_pulse, signal_forward)
@@ -56,7 +55,6 @@ def preprocess_data(data, params):
         ref_forward_scans_aligned = [ref['forward_scan']['aligned'] for ref in pulse['ref']]
         ref_backward_scans_aligned = [ref['backward_scan']['aligned'] for ref in pulse['ref']]
         pulse['avg_ref_aligned'] = np.mean(ref_forward_scans_aligned + ref_backward_scans_aligned, axis=0)
-
 
 
 
@@ -113,7 +111,7 @@ def preprocess_data(data, params):
 
     # Using the averaged reference pulse to remove baseline noise from the average pulse
 
-    for pulse in tqdm(data, desc='Removing Baseline Noise using air reference'):
+    for pulse in data:
         for scan in pulse['scan']:
             signal_forward = scan['forward_scan']['aligned']
             signal_backward = scan['backward_scan']['aligned']
@@ -161,15 +159,15 @@ def preprocess_data(data, params):
     reserved_data = []
     reserved_labels = []
 
-    for i in tqdm(range(len(treated_data)), desc='Processing Treated Data'):
+    for i in range(len(treated_data)):
         treated = treated_data[i]
         bare = bare_data[i]
 
         all_treated_scans = [scan['forward_scan']['cleaned'] for scan in treated['scan']] + [scan['backward_scan']['cleaned'] for scan in treated['scan']]
         all_bare_scans = [scan['forward_scan']['cleaned'] for scan in bare['scan']] + [scan['backward_scan']['cleaned'] for scan in bare['scan']]
 
-        for j in tqdm(range(len(all_treated_scans)), desc='Processing Treated Scans', leave=False):
-            for y in tqdm(range(len(all_bare_scans)), desc='Processing Bare Scans', leave=False):
+        for j in range(len(all_treated_scans)):
+            for y in range(len(all_bare_scans)):
                 # Last 4 pulses are reserved for final evaluation
                 if i >= len(treated_data) - 4:
                     reserved_data.append(all_treated_scans[j] - all_bare_scans[y])
@@ -178,11 +176,6 @@ def preprocess_data(data, params):
                     final_data.append(all_treated_scans[j] - all_bare_scans[y])
                     labels.append(treated['samplematrix_fixed'].split()[2])
 
-    final_data = np.asarray(final_data)
-    reserved_data = np.asarray(reserved_data)
-    labels = np.asarray(labels)
-    reserved_labels = np.asarray(reserved_labels)
-    
 
 
     # plotting the final data
@@ -217,7 +210,7 @@ def preprocess_data(data, params):
     tukey_alpha = params['tukey_alpha']
 
     final_tukey_data = []
-    final_reserved_data = []
+    final_reserverd_data = []
 
     for pulse in final_data:
         window_start = len(pulse) // 2 - tukey_window_size
@@ -241,9 +234,8 @@ def preprocess_data(data, params):
 
         new_pulse = np.zeros(len(pulse), dtype=float)
         new_pulse[window_start: window_end] = tukey_window
-        final_reserved_data.append(new_pulse)
+        final_reserverd_data.append(new_pulse)
 
-    final_reserved_data = np.asarray(final_reserved_data)
 
 
     # plotting the final data after applying the tukey window
@@ -275,4 +267,4 @@ def preprocess_data(data, params):
     y = labels
 
     
-    return X, y, final_reserved_data, reserved_labels
+    return X, y, final_reserverd_data, reserved_labels

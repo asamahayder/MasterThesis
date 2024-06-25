@@ -1,6 +1,5 @@
 import numpy as np
 import logger
-from tqdm import tqdm
 
 def feature_engineer(data, params):
     final_tukey_data = data[0]
@@ -16,7 +15,7 @@ def feature_engineer(data, params):
     polynomial_coefficients_reserved = []
 
     
-    for pulse in tqdm(final_tukey_data, desc="Fitting polynomial to extract features"):
+    for pulse in final_tukey_data:
         x = np.arange(len(pulse)) 
         y = pulse 
         
@@ -24,7 +23,7 @@ def feature_engineer(data, params):
         coeffs = np.polyfit(x, y, degree)
         polynomial_coefficients.append(coeffs)
 
-    for pulse in tqdm(reserved_data, desc="Fitting polynomial to extract features (reserved data)"):
+    for pulse in reserved_data:
         x = np.arange(len(pulse)) 
         y = pulse 
         

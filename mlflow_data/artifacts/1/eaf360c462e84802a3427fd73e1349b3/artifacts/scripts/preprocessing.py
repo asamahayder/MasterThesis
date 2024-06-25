@@ -178,11 +178,7 @@ def preprocess_data(data, params):
                     final_data.append(all_treated_scans[j] - all_bare_scans[y])
                     labels.append(treated['samplematrix_fixed'].split()[2])
 
-    final_data = np.asarray(final_data)
-    reserved_data = np.asarray(reserved_data)
-    labels = np.asarray(labels)
-    reserved_labels = np.asarray(reserved_labels)
-    
+
 
 
     # plotting the final data
