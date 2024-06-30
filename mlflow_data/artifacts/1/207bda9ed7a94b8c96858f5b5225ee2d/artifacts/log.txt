@@ -1,0 +1,32 @@
+Data Shape
+Number of samples: 88
+Number of scans per sample: 10
+Number of time points per scan: 24900
+observations so far: 
+1) Data is randomly time shifted which shows the time instability of the topticaSmart system
+2) The time shift tends to group based on which day the data was sampled
+3) The time shift is not only across different samples, but also across multiple pulses on same samples, although to a lesser degree
+Shape of data after tukey applied: (16000, 3000)
+Shape of data after polynomial fit: (16000, 16)
+0: 8000
+1: 8000
+Number of total datapoints: 17600
+Number of training datapoints: 16000
+Number of testing datapoints: 1600
+The following is the count of how many times each classes appeas in the test set:
+0: 800
+1: 800
+
+The following is the count of how many times each classes were predicted in the outer loop:
+0: 4000
+The following is the count of how many times each classes were predicted in the outer loop:
+1: 4000
+The following is the count of how many times each classes were predicted in the outer loop:
+1: 4000
+The following is the count of how many times each classes were predicted in the outer loop:
+0: 4000
+Final estimated accuracy by averaging: 0.49687499999999996
+Final hyperparameters: {'n_estimators': 260, 'max_depth': 16, 'min_samples_split': 8, 'min_samples_leaf': 6, 'max_features': 'log2', 'bootstrap': False, 'criterion': 'gini', 'min_weight_fraction_leaf': 0.22617713357979796, 'max_leaf_nodes': 63, 'min_impurity_decrease': 0.15382672405234338}
+The following is the count of how many times each classes were predicted:
+g/PBS: 1600
+Final accuracy on the test set: 0.5

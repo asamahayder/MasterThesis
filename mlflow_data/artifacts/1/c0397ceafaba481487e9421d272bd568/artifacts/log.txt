@@ -1,0 +1,8 @@
+Data Shape
+Number of samples: 88
+Number of scans per sample: 10
+Number of time points per scan: 24900
+observations so far: 
+1) Data is randomly time shifted which shows the time instability of the topticaSmart system
+2) The time shift tends to group based on which day the data was sampled
+3) The time shift is not only across different samples, but also across multiple pulses on same samples, although to a lesser degree

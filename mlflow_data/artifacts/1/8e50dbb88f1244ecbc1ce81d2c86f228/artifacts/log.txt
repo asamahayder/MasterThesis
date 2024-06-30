@@ -1,0 +1,47 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Shape of data after tukey applied: (16000, 3000)
+Shape of data after polynomial fit: (16000, 16)
+
+Class counts in training set:
+0: 8000
+1: 8000
+Number of total datapoints: 17600
+Number of training datapoints: 16000
+Number of testing datapoints: 1600
+Class counts in test set:
+0: 800
+1: 800
+
+Outer loop true class counts:
+0: 2000
+1: 2000
+Outer loop predictions class counts:
+0: 4000
+
+Outer loop true class counts:
+0: 2006
+1: 1994
+Outer loop predictions class counts:
+1: 4000
+
+Outer loop true class counts:
+0: 2019
+1: 1981
+Outer loop predictions class counts:
+1: 4000
+
+Outer loop true class counts:
+0: 1975
+1: 2025
+Outer loop predictions class counts:
+0: 4000
+
+Final estimated accuracy by averaging: 0.49687499999999996
+Final hyperparameters: {'n_estimators': 189, 'max_depth': 16, 'min_samples_split': 6, 'min_samples_leaf': 6, 'bootstrap': False, 'criterion': 'entropy', 'min_weight_fraction_leaf': 0.23689228763241693, 'max_leaf_nodes': 59, 'min_impurity_decrease': 0.20981488268404055}
+Class counts in final predictions:
+g/PBS: 1600
+Final accuracy on the test set: 0.5

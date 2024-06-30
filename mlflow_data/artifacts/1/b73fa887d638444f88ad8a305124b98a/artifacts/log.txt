@@ -1,0 +1,54 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Max shift: 62
+Shape of aligned data before cutting: (3520, 24900)
+Shape of aligned data after cutting: (3520, 24776)
+Shape of data after polynomial fit: (800, 23)
+
+Class counts in training set:
+0: 400
+1: 400
+Number of total datapoints: 880
+Number of training datapoints: 800
+Number of testing datapoints: 80
+Class counts in test set:
+0: 40
+1: 40
+
+Outer loop true class counts:
+0: 116
+1: 84
+Outer loop predictions class counts:
+0: 90
+1: 110
+
+Outer loop true class counts:
+0: 93
+1: 107
+Outer loop predictions class counts:
+0: 101
+1: 99
+
+Outer loop true class counts:
+0: 79
+1: 121
+Outer loop predictions class counts:
+0: 98
+1: 102
+
+Outer loop true class counts:
+0: 112
+1: 88
+Outer loop predictions class counts:
+0: 100
+1: 100
+
+Final estimated accuracy by averaging: 0.62625
+Final hyperparameters: {'n_estimators': 200, 'max_depth': 16, 'min_samples_split': 6, 'min_samples_leaf': 6, 'bootstrap': True, 'criterion': 'gini'}
+Class counts in final predictions:
+PBS: 51
+g/PBS: 29
+Final accuracy on the test set: 0.8125
