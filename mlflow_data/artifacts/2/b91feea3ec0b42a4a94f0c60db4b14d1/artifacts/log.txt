@@ -1,0 +1,94 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Max shift: 62
+Shape of aligned data before cutting: (3520, 24900)
+Shape of aligned data after cutting: (3520, 24776)
+Shape of data after polynomial fit: (880, 23)
+
+Class counts:
+g/PBS: 440
+PBS: 440
+Number of total datapoints: 880
+Outer fold number: 1
+Outer loop true training class counts:
+g/PBS: 324
+PBS: 336
+Outer loop training predictions class counts:
+g/PBS: 289
+PBS: 371
+Outer loop true test class counts:
+g/PBS: 116
+PBS: 104
+Outer loop test predicted class counts:
+g/PBS: 96
+PBS: 124
+Best parameters:
+{'n_estimators': 72, 'max_depth': 5, 'min_samples_split': 9, 'min_samples_leaf': 8, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.6893939393939394
+Test accuracy: 0.6272727272727273
+
+Outer fold number: 2
+Outer loop true training class counts:
+g/PBS: 333
+PBS: 327
+Outer loop training predictions class counts:
+g/PBS: 307
+PBS: 353
+Outer loop true test class counts:
+g/PBS: 107
+PBS: 113
+Outer loop test predicted class counts:
+g/PBS: 105
+PBS: 115
+Best parameters:
+{'n_estimators': 169, 'max_depth': 5, 'min_samples_split': 5, 'min_samples_leaf': 3, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.7181818181818181
+Test accuracy: 0.5909090909090909
+
+Outer fold number: 3
+Outer loop true training class counts:
+g/PBS: 336
+PBS: 324
+Outer loop training predictions class counts:
+g/PBS: 333
+PBS: 327
+Outer loop true test class counts:
+g/PBS: 104
+PBS: 116
+Outer loop test predicted class counts:
+g/PBS: 103
+PBS: 117
+Best parameters:
+{'n_estimators': 50, 'max_depth': 8, 'min_samples_split': 3, 'min_samples_leaf': 8, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.7378787878787879
+Test accuracy: 0.6772727272727272
+
+Outer fold number: 4
+Outer loop true training class counts:
+g/PBS: 327
+PBS: 333
+Outer loop training predictions class counts:
+g/PBS: 321
+PBS: 339
+Outer loop true test class counts:
+g/PBS: 113
+PBS: 107
+Outer loop test predicted class counts:
+g/PBS: 112
+PBS: 108
+Best parameters:
+{'n_estimators': 134, 'max_depth': 5, 'min_samples_split': 8, 'min_samples_leaf': 1, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.7090909090909091
+Test accuracy: 0.6045454545454545
+
+Final estimated training accuracy by averaging: 0.714
+**** Final estimated test accuracy by averaging: 0.625 ****
+Final estimated precision by averaging: 0.618
+Final estimated recall by averaging: 0.652
+Final estimated f1 score by averaging: 0.634
+Final estimated specificity: 0.619
+Final estimated sensitivity: 0.632
+Final estimated roc auc score: 0.688

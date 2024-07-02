@@ -1,0 +1,81 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Max shift: 62
+Shape of aligned data before cutting: (3520, 24900)
+Shape of aligned data after cutting: (3520, 24776)
+Shape of data after polynomial fit: (880, 23)
+
+Class counts:
+g/PBS: 440
+PBS: 440
+Number of total datapoints: 880
+Outer fold number: 1
+Outer loop true class counts:
+g/PBS: 116
+PBS: 104
+Outer loop training predictions class counts:
+g/PBS: 325
+PBS: 335
+Outer loop testing predictions class counts:
+g/PBS: 104
+PBS: 116
+Best parameters:
+{'n_estimators': 195, 'max_depth': 16, 'min_samples_split': 6, 'min_samples_leaf': 6, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.8045454545454546
+Test accuracy: 0.6454545454545455
+
+Outer fold number: 2
+Outer loop true class counts:
+g/PBS: 107
+PBS: 113
+Outer loop training predictions class counts:
+g/PBS: 334
+PBS: 326
+Outer loop testing predictions class counts:
+g/PBS: 121
+PBS: 99
+Best parameters:
+{'n_estimators': 200, 'max_depth': 14, 'min_samples_split': 6, 'min_samples_leaf': 6, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.8015151515151515
+Test accuracy: 0.6090909090909091
+
+Outer fold number: 3
+Outer loop true class counts:
+g/PBS: 104
+PBS: 116
+Outer loop training predictions class counts:
+g/PBS: 325
+PBS: 335
+Outer loop testing predictions class counts:
+g/PBS: 101
+PBS: 119
+Best parameters:
+{'n_estimators': 195, 'max_depth': 15, 'min_samples_split': 7, 'min_samples_leaf': 5, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.8166666666666667
+Test accuracy: 0.6863636363636364
+
+Outer fold number: 4
+Outer loop true class counts:
+g/PBS: 113
+PBS: 107
+Outer loop training predictions class counts:
+g/PBS: 329
+PBS: 331
+Outer loop testing predictions class counts:
+g/PBS: 121
+PBS: 99
+Best parameters:
+{'n_estimators': 203, 'max_depth': 16, 'min_samples_split': 7, 'min_samples_leaf': 7, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.7606060606060606
+Test accuracy: 0.6454545454545455
+
+Final estimated training accuracy by averaging: 0.7958333333333334
+**** Final estimated test accuracy by averaging: 0.6465909090909091 ****
+Final estimated precision by averaging: 0.6480940599855407
+Final estimated recall by averaging: 0.6384656285217297
+Final estimated specificity by averaging: 0.648960739030023
+Final estimated sensitivity by averaging: 0.6442953020134228
+Final estimated f1 score by averaging: 0.6418840925301075

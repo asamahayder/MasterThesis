@@ -1,0 +1,7 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Max shift: 1.8820175340351536e-13
+Shape of aligned data before cutting: (3520, 24900)
