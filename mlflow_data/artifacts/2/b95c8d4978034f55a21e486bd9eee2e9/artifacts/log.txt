@@ -1,0 +1,101 @@
+Raw Data Shape
+Number of samples: 88
+Number of scans per sample: 10 x2 (forward and backward scans)
+Number of time points per scan: 24900
+
+Max shift: 62
+Shape of aligned data before cutting: (3520, 24900)
+Shape of aligned data after cutting: (3520, 24776)
+Shape of data after polynomial fit: (880, 7)
+
+Class counts in entire dataset: g/PBS: 440, PBS: 440, 
+Number of total datapoints: 880
+Feature importances (permutation importance):
+Feature 1: -0.075
+Feature 0: -0.05772727272727272
+Feature 2: 0.0
+Feature 3: 0.0
+Feature 4: 0.0
+Feature 5: 0.0
+Feature 6: 0.0
+Outer fold number: 1
+Outer loop true training class counts: g/PBS: 340, PBS: 320, 
+Outer loop training predictions class counts: g/PBS: 325, PBS: 335, 
+Outer loop true test class counts: g/PBS: 100, PBS: 120, 
+Outer loop test predicted class counts: g/PBS: 123, PBS: 97, 
+Best parameters:
+{'n_estimators': 398, 'max_depth': 19, 'min_samples_split': 5, 'min_samples_leaf': 10, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.7166666666666667
+Test accuracy: 0.41363636363636364
+
+Feature importances (permutation importance):
+Feature 0: -0.016818181818181805
+Feature 1: -0.006363636363636349
+Feature 2: 0.0
+Feature 3: 0.0
+Feature 4: 0.0
+Feature 5: 0.0
+Feature 6: 0.0
+Outer fold number: 2
+Outer loop true training class counts: g/PBS: 320, PBS: 340, 
+Outer loop training predictions class counts: g/PBS: 264, PBS: 396, 
+Outer loop true test class counts: g/PBS: 120, PBS: 100, 
+Outer loop test predicted class counts: g/PBS: 91, PBS: 129, 
+Best parameters:
+{'n_estimators': 279, 'max_depth': 5, 'min_samples_split': 4, 'min_samples_leaf': 9, 'bootstrap': True, 'criterion': 'gini'}
+Training accuracy: 0.6787878787878788
+Test accuracy: 0.4590909090909091
+
+Feature importances (permutation importance):
+Feature 2: 0.0
+Feature 3: 0.0
+Feature 4: 0.0
+Feature 5: 0.0
+Feature 6: 0.0
+Feature 1: 0.00318181818181818
+Feature 0: 0.007727272727272716
+Outer fold number: 3
+Outer loop true training class counts: g/PBS: 340, PBS: 320, 
+Outer loop training predictions class counts: g/PBS: 346, PBS: 314, 
+Outer loop true test class counts: g/PBS: 100, PBS: 120, 
+Outer loop test predicted class counts: g/PBS: 114, PBS: 106, 
+Best parameters:
+{'n_estimators': 301, 'max_depth': 15, 'min_samples_split': 5, 'min_samples_leaf': 1, 'bootstrap': True, 'criterion': 'entropy'}
+Training accuracy: 0.9545454545454546
+Test accuracy: 0.4909090909090909
+
+Feature importances (permutation importance):
+Feature 0: -0.13409090909090904
+Feature 1: -0.11590909090909088
+Feature 2: 0.0
+Feature 3: 0.0
+Feature 4: 0.0
+Feature 5: 0.0
+Feature 6: 0.0
+Outer fold number: 4
+Outer loop true training class counts: g/PBS: 320, PBS: 340, 
+Outer loop training predictions class counts: g/PBS: 308, PBS: 352, 
+Outer loop true test class counts: g/PBS: 120, PBS: 100, 
+Outer loop test predicted class counts: g/PBS: 88, PBS: 132, 
+Best parameters:
+{'n_estimators': 362, 'max_depth': 23, 'min_samples_split': 6, 'min_samples_leaf': 1, 'bootstrap': True, 'criterion': 'entropy'}
+Training accuracy: 0.9666666666666667
+Test accuracy: 0.4090909090909091
+
+Final estimated training accuracy by averaging: 0.829
+Final estimated test accuracy by averaging: 0.443
+Final estimated balanced training accuracy by averaging: 0.828
+Final estimated balanced test accuracy by averaging: 0.449
+Final estimated precision by averaging: 0.451
+Final estimated recall by averaging: 0.475
+Final estimated f1 score by averaging: 0.457
+Final estimated specificity: 0.446
+Final estimated sensitivity: 0.44
+Final estimated roc auc score: 0.436
+Standard deviation of training accuracy: 0.132
+Standard deviation of test accuracy: 0.034
+Standard deviation of balanced training accuracy: 0.133
+Standard deviation of balanced test accuracy: 0.032
+Standard deviation of precision: 0.055
+Standard deviation of recall: 0.068
+Standard deviation of f1 score: 0.038

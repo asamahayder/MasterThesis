@@ -8,6 +8,7 @@ from joblib import Parallel, delayed
 import logger
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder
+from sklearn.inspection import permutation_importance
 
 def train_and_evaluate_model(data, parameters):
     np.random.seed(42)
@@ -97,6 +98,14 @@ def train_and_evaluate_model(data, parameters):
         # Training the model on the outer fold using best parameters
         model_outer = RandomForestClassifier(random_state=42, **best_params)
         model_outer.fit(X_train_outer, y_train_outer)
+
+        result = permutation_importance(model_outer, X_test_outer, y_test_outer, n_repeats=50, random_state=42, n_jobs=-1)
+        sorted_idx = result.importances_mean.argsort()
+
+        # Optionally log the importances
+        logger.log("Feature importances (permutation importance):")
+        for idx in sorted_idx:
+            logger.log(f"Feature {idx}: {result.importances_mean[idx]}")
 
         y_train_outer_pred = model_outer.predict(X_train_outer)
         y_test_outer_pred = model_outer.predict(X_test_outer)

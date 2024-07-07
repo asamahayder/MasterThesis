@@ -40,9 +40,9 @@ def run_step(module_name, function_name, data, params):
 # Start MLflow run
 mlflow.start_run(
     experiment_id=2, 
-    run_name="Running new version", 
+    run_name="Trying with smaller polynomial degree", 
     tags={"algorithm": "Random Forest", "domain": "Time Domain"}, 
-    description="This version includes more metrics and plots. Also it uses an accurate estimate of accuracy"
+    description="Based on result from permutation importance, we are trying with a smaller polynomial degree to see if it improves the model performance."
 )
 
 mlflow.log_artifact(os.path.join(current_file_directory, 'config.json'))
