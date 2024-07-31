@@ -58,18 +58,11 @@ def load_data(_, params):
 
     # Removing air and NC as these are irrelevant for our purpose
     data = [d for d in data if not d['samplematrix_fixed'] == 'air']
+    data = [d for d in data if not d['samplematrix_fixed'].split()[2] == 'NC']
 
-    ids_to_remove = []
-
+    # Creating sample ID as separate field in data dict
     for d in data:
-        values = d['samplematrix_fixed'].split()
-        if values[2] == 'NC':
-            ids_to_remove.append(values[1])
-
-    data = [d for d in data if not d['samplematrix_fixed'].split()[1] in ids_to_remove]
-
-
-
+        d['sample_id'] = d['samplematrix_fixed'].split()[1]
 
     # Plotting signals
     x = data[4]['scan'][0]['forward_scan']['time']

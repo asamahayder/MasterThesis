@@ -7,6 +7,216 @@ import logger
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder
 
+
+def preprocess_data_frequency_domain(data, params):
+    np.random.seed(42)
+
+    for d in data:
+        for scan in d['scan']:
+            # Standardizing the signal
+            signal = scan['forward_scan']['signal']
+            signal = (signal - np.mean(signal)) / np.std(signal)
+            scan['forward_scan']['signal'] = signal
+
+            # Normalizing the signal
+            """ signal = scan['forward_scan']['signal']
+            signal = (signal - np.min(signal)) / (np.max(signal) - np.min(signal))
+            scan['forward_scan']['signal'] = signal """
+
+        for ref in d['ref']:
+            # Standardizing the signal
+            signal = ref['forward_scan']['signal']
+            signal = (signal - np.mean(signal)) / np.std(signal)
+            ref['forward_scan']['signal'] = signal
+
+            # Normalizing the signal
+            """ signal = ref['forward_scan']['signal']
+            signal = (signal - np.min(signal)) / (np.max(signal) - np.min(signal))
+            ref['forward_scan']['signal'] = signal """
+
+    # applying tukey
+    window_size = 325
+    alpha = 0.80
+
+    for d in data:
+        for scan in d['scan']:
+            y = scan['forward_scan']['signal']
+            min_index = np.argmin(y)
+            max_index = np.argmax(y)
+            middle_index = math.floor((min_index+max_index)/2)
+            window_start = middle_index - window_size
+            window_end = middle_index + window_size
+            window = tukey(window_end-window_start, alpha = alpha)
+            windowed_signal = y[window_start: window_end] * window
+            y = np.zeros(len(y), dtype=float)
+            y[window_start: window_end] = windowed_signal
+
+            scan['forward_scan']['signal'] = y
+
+        for ref in d['ref']:
+            y = ref['forward_scan']['signal']
+            min_index = np.argmin(y)
+            max_index = np.argmax(y)
+            middle_index = math.floor((min_index+max_index)/2)
+            window_start = middle_index - window_size
+            window_end = middle_index + window_size
+            window = tukey(window_end-window_start, alpha = alpha)
+            windowed_signal = y[window_start: window_end] * window
+            y = np.zeros(len(y), dtype=float)
+            y[window_start: window_end] = windowed_signal
+
+            ref['forward_scan']['signal'] = y
+
+    # FFT
+    for d in data:
+        d['fft'] = np.fft.rfft(d['scan'][0]['forward_scan']['signal'])
+        d['fft_amp'] = np.abs(d['fft'])
+        d['fft_freq'] = np.fft.rfftfreq(len(d['scan'][0]['forward_scan']['signal'])) * (10**(-12)) # Converting to THz
+
+        d['fft_ref'] = np.fft.rfft(d['ref'][0]['forward_scan']['signal'])
+        d['fft_amp_ref'] = np.abs(d['fft_ref'])
+        d['fft_freq_ref'] = np.fft.rfftfreq(len(d['ref'][0]['forward_scan']['signal'])) * (10**(-12)) # Converting to THz
+
+
+    # normalizing using reference
+    for d in data:
+        d['fft_amp_norm'] = d['fft_amp'] / d['fft_amp_ref']
+
+
+    # Normalizing using bare signal
+    treated_data = [d for d in data if not 'bare' in d['samplematrix_fixed']]
+    bare_data = [d for d in data if 'bare' in d['samplematrix_fixed']]
+    for d in treated_data:
+        corresponding_bare = [b for b in bare_data if b['samplematrix_fixed'].split()[1] == d['samplematrix_fixed'].split()[1]][0]
+        d['fft_amp_norm'] = d['fft_amp_norm'] / corresponding_bare['fft_amp_norm']
+    
+
+    final_data = [d['fft_amp_norm'] for d in data if not 'bare' in d['samplematrix_fixed']]
+    labels = [d['samplematrix_fixed'].split()[2] for d in data if not 'bare' in d['samplematrix_fixed']]
+    ids = [d['samplematrix_fixed'].split()[1] for d in data if not 'bare' in d['samplematrix_fixed']]
+
+    le = LabelEncoder()
+    le.classes_ = np.array(["g/PBS", "PBS"])
+    labels = le.transform(labels)
+
+    X = np.asarray(final_data)
+    y = np.asarray(labels)
+    groups = np.asarray(ids)
+
+    return X, y, groups
+
+"""
+def preprocess_data_simple(data, params):
+    np.random.seed(42)
+
+    # Aligning the pulses
+    reference_pulse = data[0]['scan'][0]['forward_scan']['signal']
+    def find_shift(reference, pulse):
+        correlation = correlate(pulse, reference)
+        shift = np.argmax(correlation) - len(pulse)
+        return shift
+    
+    max_shift = 0
+    for pulse in tqdm(data, desc='Processing Pulses'):
+        for scan in pulse['scan']:
+            signal = scan['forward_scan']['signal']
+            shift = find_shift(reference_pulse, signal)
+            aligned_signal = np.roll(signal, -shift)
+            if abs(shift) > max_shift:
+                max_shift = abs(shift)
+            scan['forward_scan']['signal'] = aligned_signal
+
+        for ref in pulse['ref']:
+            signal_forward = ref['forward_scan']['signal']
+            shift_forward = find_shift(reference_pulse, signal_forward)
+            aligned_pulse_forward = np.roll(signal_forward, -shift_forward)
+            if abs(shift_forward) > max_shift:
+                max_shift = abs(shift_forward)
+            ref['forward_scan']['signal'] = aligned_pulse_forward
+
+
+    # using max shift to cut off the ends of the pulses
+    for pulse in tqdm(data, desc='Cutting off ends of pulses'):
+        for scan in pulse['scan']:
+            scan['forward_scan']['signal'] = scan['forward_scan']['signal'][max_shift:-max_shift]
+        
+        for ref in pulse['ref']:
+            ref['forward_scan']['signal'] = ref['forward_scan']['signal'][max_shift:-max_shift]
+
+    
+    for d in data:
+        for scan in d['scan']:
+            # Standardizing the signal
+            signal = scan['forward_scan']['signal']
+            signal = (signal - np.mean(signal)) / np.std(signal)
+            scan['forward_scan']['signal'] = signal
+
+            # Normalizing the signal
+            signal = scan['forward_scan']['signal']
+            signal = (signal - np.min(signal)) / (np.max(signal) - np.min(signal))
+            scan['forward_scan']['signal'] = signal
+
+        for ref in d['ref']:
+            # Standardizing the signal
+            signal = ref['forward_scan']['signal']
+            signal = (signal - np.mean(signal)) / np.std(signal)
+            ref['forward_scan']['signal'] = signal
+
+            # Normalizing the signal
+            signal = ref['forward_scan']['signal']
+            signal = (signal - np.min(signal)) / (np.max(signal) - np.min(signal))
+            ref['forward_scan']['signal'] = signal
+    
+
+    # subtracting ref
+    for pulse in data:
+       ref_forward_scans = [ref['forward_scan']['signal'] for ref in pulse['ref']]
+       avg_ref =  np.mean(ref_forward_scans, axis=0)
+       for scan in pulse['scan']:
+           scan['forward_scan']['signal'] = scan['forward_scan']['signal'] - avg_ref
+ 
+
+    # subtracting bare
+    treated_data = [d for d in data if not 'bare' in d['samplematrix_fixed']]
+    bare_data = [d for d in data if 'bare' in d['samplematrix_fixed']]
+    for pulse in treated_data:
+        corresponding_bare = [d for d in bare_data if d['samplematrix_fixed'].split()[1] == pulse['samplematrix_fixed'].split()[1]][0]
+        bare_forward_scans = [scan['forward_scan']['signal'] for scan in corresponding_bare['scan']]
+        avg_bare = np.mean(bare_forward_scans, axis=0) 
+        for scan in pulse['scan']:
+            scan['forward_scan']['signal'] = scan['forward_scan']['signal'] - avg_bare
+ 
+    
+    # These values were found by experimenting and inspecting the resulting pulses
+    window_start = 3750
+    window_end = 4850
+
+    final_data = []
+    labels = []
+    ids = []
+
+    # final_data = [d['scan'][0]['forward_scan']['signal'][window_start:window_end] for d in data if not 'bare' in d['samplematrix_fixed']]
+    # labels = [d['samplematrix_fixed'].split()[2] for d in data if not 'bare' in d['samplematrix_fixed']]
+    # ids = [d['samplematrix_fixed'].split()[1] for d in data if not 'bare' in d['samplematrix_fixed']]
+
+    for d in treated_data:
+        for scan in d['scan']:
+            final_data.append(scan['forward_scan']['signal'][window_start:window_end])
+            labels.append(d['samplematrix_fixed'].split()[2])
+            ids.append(d['samplematrix_fixed'].split()[1])
+
+    le = LabelEncoder()
+    le.classes_ = np.array(["g/PBS", "PBS"])
+    labels = le.transform(labels)
+
+    X = np.asarray(final_data)
+    y = np.asarray(labels)
+    groups = np.asarray(ids)
+
+    return X, y, groups
+"""
+
+"""
 def preprocess_data(data, params):
     np.random.seed(42)
     # Choose the first pulse as the reference pulse (you can change this as needed)
@@ -198,6 +408,7 @@ def preprocess_data(data, params):
         # getting the id
         id = treated['samplematrix_fixed'].split()[1]
 
+        # forward and backwards
         all_treated_scans = [scan['forward_scan']['cleaned'] for scan in treated['scan']] + [scan['backward_scan']['cleaned'] for scan in treated['scan']]
 
         for j in range(len(all_treated_scans)):
@@ -246,3 +457,4 @@ def preprocess_data(data, params):
 
     
     return X, y, groups
+"""

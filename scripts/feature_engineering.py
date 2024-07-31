@@ -11,6 +11,14 @@ def fit_polynomial(pulse, degree):
     coeffs = p.convert().coef
     return coeffs
 
+def feature_engineer_simple(data, params):
+    np.random.seed(42)
+    X, y, groups = data
+    logger.log("Shape of data after feature engineering: ", X.shape)
+    logger.log("")
+    return X, y, groups
+
+
 def feature_engineer(data, params):
     np.random.seed(42)
     X, y, groups = data

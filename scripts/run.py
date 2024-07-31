@@ -5,6 +5,35 @@ import os
 import atexit
 import shutil
 
+
+setup = {
+    "KNN": {
+        "algorithm": "K Nearest Neighbors",
+        "abbreviation": "KNN",
+        "config_file": "config_KNN.json",
+        "train_function": "train_and_evaluate_model_KNN",
+    },
+    "SVM": {
+        "algorithm": "Support Vector Machine",
+        "abbreviation": "SVM",
+        "config_file": "config_SVM.json",
+        "train_function": "train_and_evaluate_model_SVM",
+    },
+    "RF": {
+        "algorithm": "Random Forest",
+        "abbreviation": "RF",
+        "config_file": "config_RF.json",
+        "train_function": "train_and_evaluate_model_RF",
+    },
+    "LR": {
+        "algorithm": "Logistic Regression",
+        "abbreviation": "LR",
+        "config_file": "config_LR.json",
+        "train_function": "train_and_evaluate_model_LR",
+    }
+}
+
+
 mlflow.set_tracking_uri("http://localhost:5000")
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
 temp_folder_path = os.path.join(current_file_directory, 'temp_plots')
@@ -27,25 +56,29 @@ atexit.register(cleanup, current_file_directory)
 # Setting the current working directory to the directory of the run script
 os.chdir(current_file_directory)
 
-# Load configuration
-with open('config.json') as f:
-    config = json.load(f)
-
 def run_step(module_name, function_name, data, params):
     print("Running", module_name, function_name)
     module = importlib.import_module(module_name)
     function = getattr(module, function_name)
     return function(data, params)
 
+setup = setup['KNN']
+
 # Start MLflow run
 mlflow.start_run(
-    experiment_id=2, 
-    run_name="Trying with smaller polynomial degree", 
-    tags={"algorithm": "Random Forest", "domain": "Time Domain"}, 
-    description="Based on result from permutation importance, we are trying with a smaller polynomial degree to see if it improves the model performance."
+    experiment_id=4,
+    run_name=f"{setup['abbreviation']} fft + cut + standardization + tukey + ref divided + bare divided",
+    tags={"algorithm": setup['algorithm'], "domain": "Frequency Domain"},
+    description=""
 )
 
-mlflow.log_artifact(os.path.join(current_file_directory, 'config.json'))
+config_file = setup['config_file']
+
+# Load configuration
+with open(config_file) as f:
+    config = json.load(f)
+
+mlflow.log_artifact(os.path.join(current_file_directory, config_file))
 mlflow.log_artifact(os.path.join(current_file_directory, 'run.py'), artifact_path="scripts")
 mlflow.log_artifact(os.path.join(current_file_directory, 'data_load.py'), artifact_path="scripts")
 mlflow.log_artifact(os.path.join(current_file_directory, 'preprocessing.py'), artifact_path="scripts")
@@ -73,13 +106,13 @@ for param, value in model_training_params.items():
 data = run_step('data_load', 'load_data', None, config['data_load']['params'])
 
 # Step 2: Preprocess data
-X, y, groups = run_step('preprocessing', 'preprocess_data', data, config['preprocessing']['params'])
+X, y, groups = run_step('preprocessing', 'preprocess_data_frequency_domain', data, config['preprocessing']['params'])
 
 # Step 3: Feature engineering
-X, y, groups = run_step('feature_engineering', 'feature_engineer', (X, y, groups), config['feature_engineering']['params'])
+X, y, groups = run_step('feature_engineering', 'feature_engineer_simple', (X, y, groups), config['feature_engineering']['params'])
 
 # Step 4: Model training and evaluation
-model, metrics = run_step('model_training_and_evaluation', 'train_and_evaluate_model', (X, y, groups), config['model_training_and_evaluation']['params'])
+model, metrics = run_step('model_training_and_evaluation', setup['train_function'], (X, y, groups), config['model_training_and_evaluation']['params'])
 
 for metric, value in metrics.items():
     mlflow.log_metric(metric, value)
