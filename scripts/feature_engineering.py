@@ -3,6 +3,8 @@ from numpy.polynomial import Polynomial
 import logger
 from tqdm import tqdm
 from joblib import Parallel, delayed
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 def fit_polynomial(pulse, degree):
     x = np.arange(len(pulse))

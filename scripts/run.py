@@ -67,7 +67,7 @@ setup = setup['KNN']
 # Start MLflow run
 mlflow.start_run(
     experiment_id=4,
-    run_name=f"{setup['abbreviation']} fft + cut + standardization + tukey + ref divided + bare divided",
+    run_name=f"{setup['abbreviation']} fft + cut + standardization + tukey + ref divided + bare divided + pca",
     tags={"algorithm": setup['algorithm'], "domain": "Frequency Domain"},
     description=""
 )

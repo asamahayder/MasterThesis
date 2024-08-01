@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from numpy.polynomial import Polynomial
+from sklearn.decomposition import PCA
 
 def fit_polynomial(pulse, degree):
     # x = np.arange(len(pulse))
@@ -20,6 +21,19 @@ def fit_polynomial(pulse, degree):
     # p = Polynomial.fit(x, y, degree)
     # coeffs = p.convert().coef
     return pulse
+
+def pca_feature_engineering(X, required_variance_explained):
+    pca = PCA()
+    pca.fit(X)
+
+    cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+    n_components = np.argmax(cumulative_variance >= required_variance_explained) + 1
+
+    pca = PCA(n_components=n_components)
+    pca.fit(X)
+    X_pca = pca.transform(X)
+
+    return X_pca, pca
 
 
 def train_and_evaluate_model_KNN(data, parameters):
@@ -65,11 +79,12 @@ def train_and_evaluate_model_KNN(data, parameters):
         y_train_outer, y_test_outer = y[train_outer_indicies], y[test_outer_indicies]
         groups_train_outer = groups[train_outer_indicies]
 
-        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree):
+        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained):
             X_train_inner, X_test_inner = X_train_outer[train_inner_indices], X_train_outer[test_inner_indices]
             y_train_inner, y_test_inner = y_train_outer[train_inner_indices], y_train_outer[test_inner_indices]
 
-            X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
+            # polynomial feature engineering
+            """ X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
             X_test_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_test_inner]
 
             X_train_inner_poly = np.array(X_train_inner_poly)
@@ -77,11 +92,26 @@ def train_and_evaluate_model_KNN(data, parameters):
 
             model_for_tuning.fit(X_train_inner_poly, y_train_inner)
 
-            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner)
+            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner) """
+
+            # pca feature engineering
+
+            X_train_inner_pca, pca = pca_feature_engineering(X_train_inner, required_variance_explained)
+            X_test_inner_pca = pca.transform(X_test_inner)
+
+            X_train_inner_pca = np.array(X_train_inner_pca)
+            X_test_inner_pca = np.array(X_test_inner_pca)
+
+            model_for_tuning.fit(X_train_inner_pca, y_train_inner)
+
+            validation_accuracy = model_for_tuning.score(X_test_inner_pca, y_test_inner)
+
+
             return validation_accuracy
 
         def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             n_neighbors = trial.suggest_int('n_neighbors', params['n_neighbors']['min'], params['n_neighbors']['max'])
             weights = trial.suggest_categorical('weights', params['weights'])
             algorithm = trial.suggest_categorical('algorithm', params['algorithm'])
@@ -98,7 +128,7 @@ def train_and_evaluate_model_KNN(data, parameters):
 
             inner_cv = StratifiedGroupKFold(n_splits=k_inner)
 
-            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree_of_polynomial)
+            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained)
                 for train_inner_indices, test_inner_indices in inner_cv.split(X_train_outer, y_train_outer, groups_train_outer)
             )
 
@@ -111,7 +141,8 @@ def train_and_evaluate_model_KNN(data, parameters):
 
         best_params = study.best_params
 
-        degree_of_polynomial = best_params['degree_of_polynomial']
+        #degree_of_polynomial = best_params['degree_of_polynomial']
+        required_variance_explained = best_params['pca_required_variance_explained']
         n_neighbors = best_params['n_neighbors']
         weights = best_params['weights']
         algorithm = best_params['algorithm']
@@ -127,7 +158,8 @@ def train_and_evaluate_model_KNN(data, parameters):
             p=p
         )
 
-        X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
+        # polynomial feature engineering
+        """ X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
         X_test_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_test_outer]
 
         X_train_outer_poly = np.array(X_train_outer_poly)
@@ -137,7 +169,20 @@ def train_and_evaluate_model_KNN(data, parameters):
 
         y_train_outer_pred = model_outer.predict(X_train_outer_poly)
         y_test_outer_pred = model_outer.predict(X_test_outer_poly)
-        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1]
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1] """
+
+        # pca feature engineering
+        X_train_outer_pca, pca = pca_feature_engineering(X_train_outer, required_variance_explained)
+        X_test_outer_pca = pca.transform(X_test_outer)
+
+        X_train_outer_pca = np.array(X_train_outer_pca)
+        X_test_outer_pca = np.array(X_test_outer_pca)
+
+        model_outer.fit(X_train_outer_pca, y_train_outer)
+
+        y_train_outer_pred = model_outer.predict(X_train_outer_pca)
+        y_test_outer_pred = model_outer.predict(X_test_outer_pca)
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_pca)[:, 1]
 
         training_accuracy = accuracy_score(y_train_outer, y_train_outer_pred)
         test_accuracy = accuracy_score(y_test_outer, y_test_outer_pred)
@@ -212,7 +257,8 @@ def train_and_evaluate_model_KNN(data, parameters):
     # However, we cannot use this final model to estimate the accuracy as it has seen the entire training set
 
     def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             n_neighbors = trial.suggest_int('n_neighbors', params['n_neighbors']['min'], params['n_neighbors']['max'])
             weights = trial.suggest_categorical('weights', params['weights'])
             algorithm = trial.suggest_categorical('algorithm', params['algorithm'])
@@ -227,11 +273,15 @@ def train_and_evaluate_model_KNN(data, parameters):
                 p=p
             )
             
-            X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
-            X_poly = np.array(X_poly)
+            X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+            X_pca = np.array(X_pca)
 
-            model_for_tuning.fit(X_poly, y)
-            score = model_for_tuning.score(X_poly, y)
+            #X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+            #X_poly = np.array(X_poly)
+
+            #model_for_tuning.fit(X_poly, y)
+            model_for_tuning.fit(X_pca, y)
+            score = model_for_tuning.score(X_pca, y)
 
             return score
     
@@ -241,7 +291,8 @@ def train_and_evaluate_model_KNN(data, parameters):
 
     final_hyperparameters = final_study.best_params
 
-    degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    # degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    required_variance_explained = final_hyperparameters['pca_required_variance_explained']
     n_neighbors = final_hyperparameters['n_neighbors']
     weights = final_hyperparameters['weights']
     algorithm = final_hyperparameters['algorithm']
@@ -256,10 +307,15 @@ def train_and_evaluate_model_KNN(data, parameters):
         p=p
     )
 
-    X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+    X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+    X_pca = np.array(X_pca)
+
+    model_final.fit(X_pca, y)
+
+    """ X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
     X_poly = np.array(X_poly)
 
-    model_final.fit(X_poly, y)
+    model_final.fit(X_poly, y) """
 
     # Averaging the final metrics
     final_training_accuracy = np.mean(training_accuracies)
@@ -390,11 +446,12 @@ def train_and_evaluate_model_SVM(data, parameters):
         y_train_outer, y_test_outer = y[train_outer_indicies], y[test_outer_indicies]
         groups_train_outer = groups[train_outer_indicies]
 
-        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree):
+        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained):
             X_train_inner, X_test_inner = X_train_outer[train_inner_indices], X_train_outer[test_inner_indices]
             y_train_inner, y_test_inner = y_train_outer[train_inner_indices], y_train_outer[test_inner_indices]
 
-            X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
+            # polynomial feature engineering
+            """ X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
             X_test_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_test_inner]
 
             X_train_inner_poly = np.array(X_train_inner_poly)
@@ -402,11 +459,26 @@ def train_and_evaluate_model_SVM(data, parameters):
 
             model_for_tuning.fit(X_train_inner_poly, y_train_inner)
 
-            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner)
+            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner) """
+
+            # pca feature engineering
+
+            X_train_inner_pca, pca = pca_feature_engineering(X_train_inner, required_variance_explained)
+            X_test_inner_pca = pca.transform(X_test_inner)
+
+            X_train_inner_pca = np.array(X_train_inner_pca)
+            X_test_inner_pca = np.array(X_test_inner_pca)
+
+            model_for_tuning.fit(X_train_inner_pca, y_train_inner)
+
+            validation_accuracy = model_for_tuning.score(X_test_inner_pca, y_test_inner)
+
+
             return validation_accuracy
 
         def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             C = trial.suggest_float('C', params['C']['min'], params['C']['max'], log=True)
             kernel = trial.suggest_categorical('kernel', params['kernel'])
             gamma = trial.suggest_categorical('gamma', params['gamma'])
@@ -426,7 +498,7 @@ def train_and_evaluate_model_SVM(data, parameters):
 
             inner_cv = StratifiedGroupKFold(n_splits=k_inner)
 
-            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree_of_polynomial)
+            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained)
                 for train_inner_indices, test_inner_indices in inner_cv.split(X_train_outer, y_train_outer, groups_train_outer)
             )
 
@@ -439,7 +511,8 @@ def train_and_evaluate_model_SVM(data, parameters):
 
         best_params = study.best_params
 
-        degree_of_polynomial = best_params['degree_of_polynomial']
+        #degree_of_polynomial = best_params['degree_of_polynomial']
+        required_variance_explained = best_params['pca_required_variance_explained']
         C = best_params['C']
         kernel = best_params['kernel']
         gamma = best_params['gamma']
@@ -459,7 +532,8 @@ def train_and_evaluate_model_SVM(data, parameters):
             random_state=42
         )
 
-        X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
+        # polynomial feature engineering
+        """ X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
         X_test_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_test_outer]
 
         X_train_outer_poly = np.array(X_train_outer_poly)
@@ -469,7 +543,20 @@ def train_and_evaluate_model_SVM(data, parameters):
 
         y_train_outer_pred = model_outer.predict(X_train_outer_poly)
         y_test_outer_pred = model_outer.predict(X_test_outer_poly)
-        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1]
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1] """
+
+        # pca feature engineering
+        X_train_outer_pca, pca = pca_feature_engineering(X_train_outer, required_variance_explained)
+        X_test_outer_pca = pca.transform(X_test_outer)
+
+        X_train_outer_pca = np.array(X_train_outer_pca)
+        X_test_outer_pca = np.array(X_test_outer_pca)
+
+        model_outer.fit(X_train_outer_pca, y_train_outer)
+
+        y_train_outer_pred = model_outer.predict(X_train_outer_pca)
+        y_test_outer_pred = model_outer.predict(X_test_outer_pca)
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_pca)[:, 1]
 
         training_accuracy = accuracy_score(y_train_outer, y_train_outer_pred)
         test_accuracy = accuracy_score(y_test_outer, y_test_outer_pred)
@@ -544,7 +631,8 @@ def train_and_evaluate_model_SVM(data, parameters):
     # However, we cannot use this final model to estimate the accuracy as it has seen the entire training set
 
     def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             C = trial.suggest_float('C', params['C']['min'], params['C']['max'], log=True)
             kernel = trial.suggest_categorical('kernel', params['kernel'])
             gamma = trial.suggest_categorical('gamma', params['gamma'])
@@ -562,11 +650,15 @@ def train_and_evaluate_model_SVM(data, parameters):
                 random_state=42
             )
             
-            X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
-            X_poly = np.array(X_poly)
+            X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+            X_pca = np.array(X_pca)
 
-            model_for_tuning.fit(X_poly, y)
-            score = model_for_tuning.score(X_poly, y)
+            #X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+            #X_poly = np.array(X_poly)
+
+            #model_for_tuning.fit(X_poly, y)
+            model_for_tuning.fit(X_pca, y)
+            score = model_for_tuning.score(X_pca, y)
 
             return score
     
@@ -576,7 +668,8 @@ def train_and_evaluate_model_SVM(data, parameters):
 
     final_hyperparameters = final_study.best_params
 
-    degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    # degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    required_variance_explained = final_hyperparameters['pca_required_variance_explained']
     C = final_hyperparameters['C']
     kernel = final_hyperparameters['kernel']
     gamma = final_hyperparameters['gamma']
@@ -595,10 +688,15 @@ def train_and_evaluate_model_SVM(data, parameters):
         random_state=42
     )
 
-    X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+    X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+    X_pca = np.array(X_pca)
+
+    model_final.fit(X_pca, y)
+
+    """ X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
     X_poly = np.array(X_poly)
 
-    model_final.fit(X_poly, y)
+    model_final.fit(X_poly, y) """
 
     # Averaging the final metrics
     final_training_accuracy = np.mean(training_accuracies)
@@ -729,11 +827,12 @@ def train_and_evaluate_model_LR(data, parameters):
         y_train_outer, y_test_outer = y[train_outer_indicies], y[test_outer_indicies]
         groups_train_outer = groups[train_outer_indicies]
 
-        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree):
+        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained):
             X_train_inner, X_test_inner = X_train_outer[train_inner_indices], X_train_outer[test_inner_indices]
             y_train_inner, y_test_inner = y_train_outer[train_inner_indices], y_train_outer[test_inner_indices]
 
-            X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
+            # polynomial feature engineering
+            """ X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
             X_test_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_test_inner]
 
             X_train_inner_poly = np.array(X_train_inner_poly)
@@ -741,11 +840,26 @@ def train_and_evaluate_model_LR(data, parameters):
 
             model_for_tuning.fit(X_train_inner_poly, y_train_inner)
 
-            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner)
+            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner) """
+
+            # pca feature engineering
+
+            X_train_inner_pca, pca = pca_feature_engineering(X_train_inner, required_variance_explained)
+            X_test_inner_pca = pca.transform(X_test_inner)
+
+            X_train_inner_pca = np.array(X_train_inner_pca)
+            X_test_inner_pca = np.array(X_test_inner_pca)
+
+            model_for_tuning.fit(X_train_inner_pca, y_train_inner)
+
+            validation_accuracy = model_for_tuning.score(X_test_inner_pca, y_test_inner)
+
+
             return validation_accuracy
 
         def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             C = trial.suggest_float('C', params['C']['min'], params['C']['max'], log=True)
             max_iter = trial.suggest_int('max_iter', params['max_iter']['min'], params['max_iter']['max'])
             penalty = trial.suggest_categorical('penalty', params['penalty'])
@@ -762,7 +876,7 @@ def train_and_evaluate_model_LR(data, parameters):
 
             inner_cv = StratifiedGroupKFold(n_splits=k_inner)
 
-            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree_of_polynomial)
+            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained)
                 for train_inner_indices, test_inner_indices in inner_cv.split(X_train_outer, y_train_outer, groups_train_outer)
             )
 
@@ -775,7 +889,8 @@ def train_and_evaluate_model_LR(data, parameters):
 
         best_params = study.best_params
 
-        degree_of_polynomial = best_params['degree_of_polynomial']
+        #degree_of_polynomial = best_params['degree_of_polynomial']
+        required_variance_explained = best_params['pca_required_variance_explained']
         C = best_params['C']
         max_iter = best_params['max_iter']
         penalty = best_params['penalty']
@@ -791,7 +906,8 @@ def train_and_evaluate_model_LR(data, parameters):
             random_state=42
         )
 
-        X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
+        # polynomial feature engineering
+        """ X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
         X_test_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_test_outer]
 
         X_train_outer_poly = np.array(X_train_outer_poly)
@@ -801,7 +917,20 @@ def train_and_evaluate_model_LR(data, parameters):
 
         y_train_outer_pred = model_outer.predict(X_train_outer_poly)
         y_test_outer_pred = model_outer.predict(X_test_outer_poly)
-        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1]
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1] """
+
+        # pca feature engineering
+        X_train_outer_pca, pca = pca_feature_engineering(X_train_outer, required_variance_explained)
+        X_test_outer_pca = pca.transform(X_test_outer)
+
+        X_train_outer_pca = np.array(X_train_outer_pca)
+        X_test_outer_pca = np.array(X_test_outer_pca)
+
+        model_outer.fit(X_train_outer_pca, y_train_outer)
+
+        y_train_outer_pred = model_outer.predict(X_train_outer_pca)
+        y_test_outer_pred = model_outer.predict(X_test_outer_pca)
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_pca)[:, 1]
 
         training_accuracy = accuracy_score(y_train_outer, y_train_outer_pred)
         test_accuracy = accuracy_score(y_test_outer, y_test_outer_pred)
@@ -876,7 +1005,8 @@ def train_and_evaluate_model_LR(data, parameters):
     # However, we cannot use this final model to estimate the accuracy as it has seen the entire training set
 
     def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             C = trial.suggest_float('C', params['C']['min'], params['C']['max'], log=True)
             max_iter = trial.suggest_int('max_iter', params['max_iter']['min'], params['max_iter']['max'])
             penalty = trial.suggest_categorical('penalty', params['penalty'])
@@ -891,11 +1021,15 @@ def train_and_evaluate_model_LR(data, parameters):
                 random_state=42
             )
             
-            X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
-            X_poly = np.array(X_poly)
+            X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+            X_pca = np.array(X_pca)
 
-            model_for_tuning.fit(X_poly, y)
-            score = model_for_tuning.score(X_poly, y)
+            #X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+            #X_poly = np.array(X_poly)
+
+            #model_for_tuning.fit(X_poly, y)
+            model_for_tuning.fit(X_pca, y)
+            score = model_for_tuning.score(X_pca, y)
 
             return score
     
@@ -905,7 +1039,8 @@ def train_and_evaluate_model_LR(data, parameters):
 
     final_hyperparameters = final_study.best_params
 
-    degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    # degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    required_variance_explained = final_hyperparameters['pca_required_variance_explained']
     C = final_hyperparameters['C']
     max_iter = final_hyperparameters['max_iter']
     penalty = final_hyperparameters['penalty']
@@ -921,10 +1056,15 @@ def train_and_evaluate_model_LR(data, parameters):
         random_state=42
     )
 
-    X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+    X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+    X_pca = np.array(X_pca)
+
+    model_final.fit(X_pca, y)
+
+    """ X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
     X_poly = np.array(X_poly)
 
-    model_final.fit(X_poly, y)
+    model_final.fit(X_poly, y) """
 
     # Averaging the final metrics
     final_training_accuracy = np.mean(training_accuracies)
@@ -1055,11 +1195,12 @@ def train_and_evaluate_model_RF(data, parameters):
         y_train_outer, y_test_outer = y[train_outer_indicies], y[test_outer_indicies]
         groups_train_outer = groups[train_outer_indicies]
 
-        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree):
+        def inner_fold_training(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained):
             X_train_inner, X_test_inner = X_train_outer[train_inner_indices], X_train_outer[test_inner_indices]
             y_train_inner, y_test_inner = y_train_outer[train_inner_indices], y_train_outer[test_inner_indices]
 
-            X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
+            # polynomial feature engineering
+            """ X_train_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_train_inner]
             X_test_inner_poly = [fit_polynomial(pulse, degree) for pulse in X_test_inner]
 
             X_train_inner_poly = np.array(X_train_inner_poly)
@@ -1067,11 +1208,26 @@ def train_and_evaluate_model_RF(data, parameters):
 
             model_for_tuning.fit(X_train_inner_poly, y_train_inner)
 
-            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner)
+            validation_accuracy = model_for_tuning.score(X_test_inner_poly, y_test_inner) """
+
+            # pca feature engineering
+
+            X_train_inner_pca, pca = pca_feature_engineering(X_train_inner, required_variance_explained)
+            X_test_inner_pca = pca.transform(X_test_inner)
+
+            X_train_inner_pca = np.array(X_train_inner_pca)
+            X_test_inner_pca = np.array(X_test_inner_pca)
+
+            model_for_tuning.fit(X_train_inner_pca, y_train_inner)
+
+            validation_accuracy = model_for_tuning.score(X_test_inner_pca, y_test_inner)
+
+
             return validation_accuracy
 
         def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             n_estimators = trial.suggest_int('n_estimators', params['n_estimators']['min'], params['n_estimators']['max'])
             max_depth = trial.suggest_int('max_depth', params['max_depth']['min'], params['max_depth']['max'])
             min_samples_split = trial.suggest_int('min_samples_split', params['min_samples_split']['min'], params['min_samples_split']['max'])
@@ -1092,7 +1248,7 @@ def train_and_evaluate_model_RF(data, parameters):
 
             inner_cv = StratifiedGroupKFold(n_splits=k_inner)
 
-            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, degree_of_polynomial)
+            validation_accuracies = Parallel(n_jobs=-1)(delayed(inner_fold_training)(train_inner_indices, test_inner_indices, X_train_outer, y_train_outer, model_for_tuning, required_variance_explained)
                 for train_inner_indices, test_inner_indices in inner_cv.split(X_train_outer, y_train_outer, groups_train_outer)
             )
 
@@ -1105,7 +1261,8 @@ def train_and_evaluate_model_RF(data, parameters):
 
         best_params = study.best_params
 
-        degree_of_polynomial = best_params['degree_of_polynomial']
+        #degree_of_polynomial = best_params['degree_of_polynomial']
+        required_variance_explained = best_params['pca_required_variance_explained']
         n_estimators = best_params['n_estimators']
         max_depth = best_params['max_depth']
         min_samples_split = best_params['min_samples_split']
@@ -1124,7 +1281,8 @@ def train_and_evaluate_model_RF(data, parameters):
             random_state=42,
         )
 
-        X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
+        # polynomial feature engineering
+        """ X_train_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_train_outer]
         X_test_outer_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X_test_outer]
 
         X_train_outer_poly = np.array(X_train_outer_poly)
@@ -1134,7 +1292,20 @@ def train_and_evaluate_model_RF(data, parameters):
 
         y_train_outer_pred = model_outer.predict(X_train_outer_poly)
         y_test_outer_pred = model_outer.predict(X_test_outer_poly)
-        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1]
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_poly)[:, 1] """
+
+        # pca feature engineering
+        X_train_outer_pca, pca = pca_feature_engineering(X_train_outer, required_variance_explained)
+        X_test_outer_pca = pca.transform(X_test_outer)
+
+        X_train_outer_pca = np.array(X_train_outer_pca)
+        X_test_outer_pca = np.array(X_test_outer_pca)
+
+        model_outer.fit(X_train_outer_pca, y_train_outer)
+
+        y_train_outer_pred = model_outer.predict(X_train_outer_pca)
+        y_test_outer_pred = model_outer.predict(X_test_outer_pca)
+        y_pred_test_outer_proba = model_outer.predict_proba(X_test_outer_pca)[:, 1]
 
         training_accuracy = accuracy_score(y_train_outer, y_train_outer_pred)
         test_accuracy = accuracy_score(y_test_outer, y_test_outer_pred)
@@ -1209,7 +1380,8 @@ def train_and_evaluate_model_RF(data, parameters):
     # However, we cannot use this final model to estimate the accuracy as it has seen the entire training set
 
     def objective(trial):
-            degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            #degree_of_polynomial = trial.suggest_int('degree_of_polynomial', params['degree_of_polynomial']['min'], params['degree_of_polynomial']['max'])
+            required_variance_explained = trial.suggest_float('pca_required_variance_explained', params['pca_required_variance_explained']['min'], params['pca_required_variance_explained']['max'])
             n_estimators = trial.suggest_int('n_estimators', params['n_estimators']['min'], params['n_estimators']['max'])
             max_depth = trial.suggest_int('max_depth', params['max_depth']['min'], params['max_depth']['max'])
             min_samples_split = trial.suggest_int('min_samples_split', params['min_samples_split']['min'], params['min_samples_split']['max'])
@@ -1227,11 +1399,15 @@ def train_and_evaluate_model_RF(data, parameters):
                 random_state=42,
             ) 
             
-            X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
-            X_poly = np.array(X_poly)
+            X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+            X_pca = np.array(X_pca)
 
-            model_for_tuning.fit(X_poly, y)
-            score = model_for_tuning.score(X_poly, y)
+            #X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+            #X_poly = np.array(X_poly)
+
+            #model_for_tuning.fit(X_poly, y)
+            model_for_tuning.fit(X_pca, y)
+            score = model_for_tuning.score(X_pca, y)
 
             return score
     
@@ -1241,7 +1417,8 @@ def train_and_evaluate_model_RF(data, parameters):
 
     final_hyperparameters = final_study.best_params
 
-    degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    # degree_of_polynomial = final_hyperparameters['degree_of_polynomial']
+    required_variance_explained = final_hyperparameters['pca_required_variance_explained']
     n_estimators = final_hyperparameters['n_estimators']
     max_depth = final_hyperparameters['max_depth']
     min_samples_split = final_hyperparameters['min_samples_split']
@@ -1259,10 +1436,15 @@ def train_and_evaluate_model_RF(data, parameters):
         random_state=42,
     )
 
-    X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
+    X_pca, pca = pca_feature_engineering(X, required_variance_explained)
+    X_pca = np.array(X_pca)
+
+    model_final.fit(X_pca, y)
+
+    """ X_poly = [fit_polynomial(pulse, degree_of_polynomial) for pulse in X]
     X_poly = np.array(X_poly)
 
-    model_final.fit(X_poly, y)
+    model_final.fit(X_poly, y) """
 
     # Averaging the final metrics
     final_training_accuracy = np.mean(training_accuracies)

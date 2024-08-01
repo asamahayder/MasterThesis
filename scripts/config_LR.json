@@ -15,7 +15,11 @@
       }
     },
     "model_training_and_evaluation": {
-      "params": {
+        "params": {
+          "pca_required_variance_explained": {
+          "min": 0.8,
+          "max": 0.99
+        },
         "degree_of_polynomial": {
           "min": 3,
           "max": 23
@@ -30,7 +34,7 @@
         },
         "max_iter": {
           "min": 100,
-          "max": 500
+          "max": 1000
         },
         "penalty": [
           "l1",
